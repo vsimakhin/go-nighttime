@@ -4,7 +4,7 @@ Go package to calculate a night time for the flight
 
 It's a simplified way to calculate where/what time an airplane and sun can meet. It doesn't compensate sunset/sunrise times for airplane altitude.
 
-The logic is simple. It finds a midpoint on the route, check the time when airplane will be there and compares it with sunset/sunrise at this point. 
+The logic is simple. It finds a midpoint on the route, check the time when airplane will be there and compares it with sunset/sunrise at this point.
 If the difference is too big it takes front/rear part of the route and check the midpoint again and again...
 
 ## Known issues
@@ -24,17 +24,17 @@ import (
 
 func main() {
 
-	// flight from LEPA to ESMX
-	route := nighttime.Route{
-		Departure: nighttime.Place{
-			Lat:  39.551700592,
-			Lon:  2.7388100624,
-			Time: time.Date(2021, 12, 8, 5, 4, 0, 0, time.UTC),
+	// flight from EBBR to LKPR
+	route := Route{
+		Departure: Place{
+			Lat:  50.9014015198,
+			Lon:  4.4844398499,
+			Time: time.Date(2022, 6, 3, 18, 53, 0, 0, time.UTC),
 		},
-		Arrival: nighttime.Place{
-			Lat:  56.9291000366,
-			Lon:  14.7279996872,
-			Time: time.Date(2021, 12, 8, 7, 53, 0, 0, time.UTC),
+		Arrival: Place{
+			Lat:  50.1007995605,
+			Lon:  14.2600002289,
+			Time: time.Date(2022, 6, 3, 20, 16, 0, 0, time.UTC),
 		},
 	}
 
@@ -46,13 +46,14 @@ func main() {
 
 
 ```bash
-$ go run main.go 
-Flight time: 2h49m0s
-Distance (nm): 1145.6113996245742
-Night time: 1h35m0s
+$ go run main.go
+Flight time: 1h23m0s
+Distance (nm): 376.5411972344908
+Night time: 26m0s
 
 ```
 
 ## Used modules
 
 * sunrisesunset https://github.com/kelvins/sunrisesunset
+* tzf https://github.com/ringsaturn/tzf
