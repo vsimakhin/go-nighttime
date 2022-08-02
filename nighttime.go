@@ -5,6 +5,10 @@ import (
 	"time"
 
 	"github.com/kelvins/sunrisesunset"
+	"github.com/ringsaturn/tzf"
+	tzfrel "github.com/ringsaturn/tzf-rel"
+	"github.com/ringsaturn/tzf/pb"
+	"google.golang.org/protobuf/proto"
 )
 
 type Place struct {
@@ -77,12 +81,45 @@ func (route *Route) Speed() float64 {
 	return route.Distance() / route.FlightTime().Hours()
 }
 
+// GetZone returns time location and UTC offset base on coordinates
+func (place *Place) GetZone() (*time.Location, float64) {
+	// default location and zone in case of errors
+	zone, offset := time.Now().Zone()
+	defaultLocation, _ := time.LoadLocation(zone)
+	defaultOffset := float64(offset / 3600)
+
+	// get data
+	input := &pb.Timezones{}
+
+	dataFile := tzfrel.LiteData
+	if err := proto.Unmarshal(dataFile, input); err != nil {
+		return defaultLocation, defaultOffset
+	}
+	finder, _ := tzf.NewFinderFromPB(input)
+
+	// get time zone name by coordinates
+	timeZone := finder.GetTimezoneName(place.Lon, place.Lat)
+
+	// get place location
+	location, err := time.LoadLocation(timeZone)
+	if err != nil {
+		return defaultLocation, defaultOffset
+	}
+
+	_, offset = time.Now().In(location).Zone()
+
+	return location, float64(offset / 3600)
+}
+
 // SunriseSunset returns sunrise and sunset times
 func (place *Place) SunriseSunset() (time.Time, time.Time) {
+	location, offset := place.GetZone()
+
 	params := sunrisesunset.Parameters{
 		Latitude:  place.Lat,
 		Longitude: place.Lon,
-		Date:      place.Time,
+		UtcOffset: offset,
+		Date:      place.Time.In(location),
 	}
 
 	sunrise, sunset, _ := params.GetSunriseSunset()
@@ -151,17 +188,22 @@ func (route *Route) MeetWithSun(target string) Place {
 func (route *Route) NightTime() time.Duration {
 	nightTime := time.Duration(0)
 
-	if (route.Departure.Time.After(route.Departure.Sunrise()) && route.Departure.Time.Before(route.Departure.Sunset())) &&
-		(route.Arrival.Time.After(route.Arrival.Sunrise()) && route.Arrival.Time.Before(route.Arrival.Sunset())) {
+	rdsr := route.Departure.Sunrise()
+	rdss := route.Departure.Sunset()
+	rasr := route.Arrival.Sunrise()
+	rass := route.Arrival.Sunset()
+
+	if (route.Departure.Time.After(rdsr) && route.Departure.Time.Before(rdss)) &&
+		(route.Arrival.Time.After(rasr) && route.Arrival.Time.Before(rass)) {
 		// full day flight
 		nightTime = time.Duration(0)
 
-	} else if route.Departure.Time.After(route.Departure.Sunrise()) && route.Departure.Time.Before(route.Departure.Sunset()) {
+	} else if route.Departure.Time.After(rdsr) && route.Departure.Time.Before(rdss) {
 		// flight from day to night, night landing
 		point := route.MeetWithSun("sunset")
 		nightTime = route.Arrival.Time.Sub(point.Time)
 
-	} else if route.Arrival.Time.After(route.Arrival.Sunrise()) && route.Arrival.Time.Before(route.Arrival.Sunset()) {
+	} else if route.Arrival.Time.After(rasr) && route.Arrival.Time.Before(rass) {
 		// flight from night to day, day landing
 		point := route.MeetWithSun("sunrise")
 		nightTime = point.Time.Sub(route.Departure.Time)
