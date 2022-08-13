@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/kelvins/sunrisesunset v0.0.0-20210220141756-39fa1bd816d5
-	github.com/ringsaturn/tzf v0.6.0
-	github.com/ringsaturn/tzf-rel v0.0.2021-c
+	github.com/ringsaturn/tzf v0.7.0
+	github.com/ringsaturn/tzf-rel v0.0.2021-c2
 	google.golang.org/protobuf v1.28.1
 )
 
