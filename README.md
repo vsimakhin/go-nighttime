@@ -25,13 +25,13 @@ import (
 func main() {
 
 	// flight from EBBR to LKPR
-	route := Route{
-		Departure: Place{
+	route := nighttime.Route{
+		Departure: nighttime.Place{
 			Lat:  50.9014015198,
 			Lon:  4.4844398499,
 			Time: time.Date(2022, 6, 3, 18, 53, 0, 0, time.UTC),
 		},
-		Arrival: Place{
+		Arrival: nighttime.Place{
 			Lat:  50.1007995605,
 			Lon:  14.2600002289,
 			Time: time.Date(2022, 6, 3, 20, 16, 0, 0, time.UTC),
