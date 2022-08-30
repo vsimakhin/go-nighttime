@@ -11,6 +11,18 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var finder *tzf.Finder
+
+func init() {
+	input := &pb.Timezones{}
+
+	dataFile := tzfrel.LiteData
+	if err := proto.Unmarshal(dataFile, input); err != nil {
+		return
+	}
+	finder, _ = tzf.NewFinderFromPB(input)
+}
+
 type Place struct {
 	Lat  float64
 	Lon  float64
@@ -88,14 +100,9 @@ func (place *Place) GetZone() (*time.Location, float64) {
 	defaultLocation, _ := time.LoadLocation(zone)
 	defaultOffset := float64(offset / 3600)
 
-	// get data
-	input := &pb.Timezones{}
-
-	dataFile := tzfrel.LiteData
-	if err := proto.Unmarshal(dataFile, input); err != nil {
+	if finder == nil {
 		return defaultLocation, defaultOffset
 	}
-	finder, _ := tzf.NewFinderFromPB(input)
 
 	// get time zone name by coordinates
 	timeZone := finder.GetTimezoneName(place.Lon, place.Lat)
