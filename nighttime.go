@@ -96,8 +96,8 @@ func (route *Route) Speed() float64 {
 // GetZone returns time location and UTC offset base on coordinates
 func (place *Place) GetZone() (*time.Location, float64) {
 	// default location and zone in case of errors
-	zone, offset := time.Now().Zone()
-	defaultLocation, _ := time.LoadLocation(zone)
+	defaultLocation := time.Now().Location()
+	_, offset := time.Now().In(defaultLocation).Zone()
 	defaultOffset := float64(offset / 3600)
 
 	if finder == nil {

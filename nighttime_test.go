@@ -23,7 +23,7 @@ func TestKnownNightTime(t *testing.T) {
 	nightTime := route.NightTime()
 
 	if nightTime.Minutes() != 26 {
-		t.Fatalf("Looks like a wrong night time calculation, should be 95 minutes")
+		t.Fatalf("Looks like a wrong night time calculation, should be 26 minutes")
 	}
 }
 
