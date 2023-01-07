@@ -13,6 +13,11 @@ import (
 
 var finder *tzf.Finder
 
+// default location and zone in case of errors
+var zone, offset = time.Now().Zone()
+var defaultLocation, _ = time.LoadLocation(zone)
+var defaultOffset = float64(offset / 3600)
+
 func init() {
 	input := &pb.Timezones{}
 
@@ -95,11 +100,6 @@ func (route *Route) Speed() float64 {
 
 // GetZone returns time location and UTC offset base on coordinates
 func (place *Place) GetZone() (*time.Location, float64) {
-	// default location and zone in case of errors
-	zone, offset := time.Now().Zone()
-	defaultLocation, _ := time.LoadLocation(zone)
-	defaultOffset := float64(offset / 3600)
-
 	if finder == nil {
 		return defaultLocation, defaultOffset
 	}
@@ -113,7 +113,7 @@ func (place *Place) GetZone() (*time.Location, float64) {
 		return defaultLocation, defaultOffset
 	}
 
-	_, offset = time.Now().In(location).Zone()
+	_, offset = place.Time.In(location).Zone()
 
 	return location, float64(offset / 3600)
 }
@@ -131,19 +131,19 @@ func (place *Place) SunriseSunset() (time.Time, time.Time) {
 
 	sunrise, sunset, _ := params.GetSunriseSunset()
 
-	return sunrise, sunset
+	return sunrise.UTC().Add(time.Duration(-30) * time.Minute), sunset.UTC().Add(time.Duration(30) * time.Minute)
 }
 
 // Sunrise returns aviation sunrise time (-30 minutes from apparent sunrise)
 func (place *Place) Sunrise() time.Time {
 	s, _ := place.SunriseSunset()
-	return s.Add(time.Duration(-30) * time.Minute)
+	return s
 }
 
 // Sunset returns aviation sunset time (+30 minutes from apparent sunset)
 func (place *Place) Sunset() time.Time {
 	_, s := place.SunriseSunset()
-	return s.Add(time.Duration(30) * time.Minute)
+	return s
 }
 
 // MeetWithSun finds the point on the route where airplane meets with Sun (rised or set)
@@ -195,10 +195,8 @@ func (route *Route) MeetWithSun(target string) Place {
 func (route *Route) NightTime() time.Duration {
 	nightTime := time.Duration(0)
 
-	rdsr := route.Departure.Sunrise()
-	rdss := route.Departure.Sunset()
-	rasr := route.Arrival.Sunrise()
-	rass := route.Arrival.Sunset()
+	rdsr, rdss := route.Departure.SunriseSunset()
+	rasr, rass := route.Arrival.SunriseSunset()
 
 	if (route.Departure.Time.After(rdsr) && route.Departure.Time.Before(rdss)) &&
 		(route.Arrival.Time.After(rasr) && route.Arrival.Time.Before(rass)) {
