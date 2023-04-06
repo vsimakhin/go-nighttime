@@ -3,6 +3,8 @@ package gonighttime
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestKnownNightTime(t *testing.T) {
@@ -22,9 +24,50 @@ func TestKnownNightTime(t *testing.T) {
 
 	nightTime := route.NightTime()
 
-	if nightTime.Minutes() != 26 {
-		t.Fatalf("Looks like a wrong night time calculation, should be 26 minutes")
+	assert.Equal(t, int(nightTime.Minutes()), 27)
+
+}
+
+func TestKnownNightTime2(t *testing.T) {
+	// flight from OMS to SVX
+	route := Route{
+		Departure: Place{
+			Lat:  54.966999,
+			Lon:  73.310501,
+			Time: time.Date(2023, 1, 1, 10, 00, 0, 0, time.UTC),
+		},
+		Arrival: Place{
+			Lat:  56.743099,
+			Lon:  60.802700,
+			Time: time.Date(2023, 1, 1, 18, 00, 0, 0, time.UTC),
+		},
 	}
+
+	nightTime := route.NightTime()
+
+	assert.Equal(t, int(nightTime.Minutes()), 396)
+
+}
+
+func TestKnownNightTime3(t *testing.T) {
+	// flight from RJTT to OMDB
+	route := Route{
+		Departure: Place{
+			Lat:  35.552299,
+			Lon:  139.779999,
+			Time: time.Date(2022, 9, 1, 7, 00, 0, 0, time.UTC),
+		},
+		Arrival: Place{
+			Lat:  25.252800,
+			Lon:  55.364399,
+			Time: time.Date(2022, 9, 1, 18, 00, 0, 0, time.UTC),
+		},
+	}
+
+	nightTime := route.NightTime()
+
+	assert.Equal(t, int(nightTime.Minutes()), 305)
+
 }
 
 func TestAllNightTime(t *testing.T) {
@@ -43,9 +86,8 @@ func TestAllNightTime(t *testing.T) {
 	}
 
 	nightTime := route.NightTime()
-	if nightTime != route.FlightTime() {
-		t.Fatalf("Night time only")
-	}
+	assert.Equal(t, nightTime, route.FlightTime())
+
 }
 
 func TestAllDayTime(t *testing.T) {
@@ -64,7 +106,5 @@ func TestAllDayTime(t *testing.T) {
 	}
 
 	nightTime := route.NightTime()
-	if nightTime.Minutes() != 0 {
-		t.Fatalf("Day time only")
-	}
+	assert.Equal(t, int(nightTime.Minutes()), 0)
 }

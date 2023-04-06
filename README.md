@@ -2,10 +2,10 @@ Go package to calculate a night time for the flight
 
 ## General
 
-It's a simplified way to calculate where/what time an airplane and sun can meet. It doesn't compensate sunset/sunrise times for airplane altitude.
+It's a simplified way to calculate where/what time an airplane and the sun can meet. It doesn't compensate for sunset/sunrise times for airplane altitude.
 
-The logic is simple. It finds a midpoint on the route, check the time when airplane will be there and compares it with sunset/sunrise at this point.
-If the difference is too big it takes front/rear part of the route and check the midpoint again and again...
+The logic is simple. It finds a midpoint on the route, checks the time when the airplane will be there and compares it with sunset/sunrise at this point.
+If the difference is too big it takes the front/rear part of the route and checks the midpoint again and again...
 
 ## Known issues
 
@@ -49,11 +49,10 @@ func main() {
 $ go run main.go
 Flight time: 1h23m0s
 Distance (nm): 376.5411972344908
-Night time: 26m0s
+Night time: 27m0s
 
 ```
 
 ## Used modules
 
-* sunrisesunset https://github.com/kelvins/sunrisesunset
-* tzf https://github.com/ringsaturn/tzf
+* go-sunrise https://github.com/nathan-osman/go-sunrise
