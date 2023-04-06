@@ -4,29 +4,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/kelvins/sunrisesunset"
-	"github.com/ringsaturn/tzf"
-	tzfrel "github.com/ringsaturn/tzf-rel"
-	"github.com/ringsaturn/tzf/pb"
-	"google.golang.org/protobuf/proto"
+	"github.com/nathan-osman/go-sunrise"
 )
-
-var finder *tzf.Finder
-
-// default location and zone in case of errors
-var zone, offset = time.Now().Zone()
-var defaultLocation, _ = time.LoadLocation(zone)
-var defaultOffset = float64(offset / 3600)
-
-func init() {
-	input := &pb.Timezones{}
-
-	dataFile := tzfrel.LiteData
-	if err := proto.Unmarshal(dataFile, input); err != nil {
-		return
-	}
-	finder, _ = tzf.NewFinderFromPB(input)
-}
 
 type Place struct {
 	Lat  float64
@@ -98,38 +77,9 @@ func (route *Route) Speed() float64 {
 	return route.Distance() / route.FlightTime().Hours()
 }
 
-// GetZone returns time location and UTC offset base on coordinates
-func (place *Place) GetZone() (*time.Location, float64) {
-	if finder == nil {
-		return defaultLocation, defaultOffset
-	}
-
-	// get time zone name by coordinates
-	timeZone := finder.GetTimezoneName(place.Lon, place.Lat)
-
-	// get place location
-	location, err := time.LoadLocation(timeZone)
-	if err != nil {
-		return defaultLocation, defaultOffset
-	}
-
-	_, offset = place.Time.In(location).Zone()
-
-	return location, float64(offset / 3600)
-}
-
 // SunriseSunset returns sunrise and sunset times
 func (place *Place) SunriseSunset() (time.Time, time.Time) {
-	location, offset := place.GetZone()
-
-	params := sunrisesunset.Parameters{
-		Latitude:  place.Lat,
-		Longitude: place.Lon,
-		UtcOffset: offset,
-		Date:      place.Time.In(location),
-	}
-
-	sunrise, sunset, _ := params.GetSunriseSunset()
+	sunrise, sunset := sunrise.SunriseSunset(place.Lat, place.Lon, place.Time.UTC().Year(), place.Time.UTC().Month(), place.Time.UTC().Day())
 
 	return sunrise.UTC().Add(time.Duration(-30) * time.Minute), sunset.UTC().Add(time.Duration(30) * time.Minute)
 }
