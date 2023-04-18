@@ -1,4 +1,6 @@
-Go package to calculate a night time for the flight
+## Arhived
+
+The repository is archived. For the flight night-time calculation check https://github.com/vsimakhin/web-logbook/blob/main/internal/nighttime/nighttime.go
 
 ## General
 
